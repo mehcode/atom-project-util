@@ -1,6 +1,6 @@
-# Atom Project Switch
+# Atom Project Util
 
-Atom library to switch projects in the same window. This is its own library
+Atom library that provides project utilities. Primarily switching in the same window. This is its own library
 because there are a number of nuances that would better serve the community
 to be addressed in a single location (and then each package that
 would like the functionality can just use this library).
@@ -8,14 +8,19 @@ would like the functionality can just use this library).
 ## Install
 
 ```
-npm install --save atom-project-switch
+npm install --save atom-project-util
 ```
 
 ## Usage
 
 ```js
+const util = require("atom-project-util")
+
 // Switch to a project with path1 and path2 as the opened paths
-require("atom-project-switch")(["path1", "path2"])
+util.switch(["path1", "path2"])
+
+// Close project
+util.close()
 ```
 
 ## License
