@@ -15,6 +15,8 @@ function atomGetStorageFolder () {
   }
 }
 
+exports.getStorageFolder = atomGetStorageFolder
+
 function saveCurrentState () {
   var paths = atom.project.getPaths()
 
@@ -117,7 +119,17 @@ function closeAllBuffers () {
   })
 }
 
-module.exports = function (paths) {
+function getTreeView () {
+  var treeViewPack = atom.packages.getActivePackage('tree-view')
+  var tv = (
+    treeViewPack && treeViewPack.mainModule &&
+    treeViewPack.mainModule.treeView)
+
+  return tv
+}
+
+// Switch to another project (in the same window)
+exports.switch = function (paths) {
   var currentStateKey = atom.getStateKey(atom.project.getPaths())
   var newStateKey = atom.getStateKey(paths)
 
@@ -136,10 +148,7 @@ module.exports = function (paths) {
           // HACK: Tree view doesn't reload expansion states
           var tvState = state.packageStates['tree-view']
           if (tvState) {
-            var treeViewPack = atom.packages.getActivePackage('tree-view')
-            var tv = (
-              treeViewPack && treeViewPack.mainModule &&
-              treeViewPack.mainModule.treeView)
+            var tv = getTreeView()
             if (tv) {
               // NOTE: Re-attach the tree-view if this is an empty atom
               if (!currentStateKey && !tv.isVisible()) tv.attach()
@@ -178,5 +187,25 @@ module.exports = function (paths) {
         resolve()
       })
     }, reject)
+  })
+}
+
+// Close the current project (to bring the editor back to an empty state)
+exports.close = function () {
+  // Save the state of the current project
+  saveCurrentState().then(() => {
+    // Set project paths
+    atom.project.setPaths([])
+
+    // Close all buffers
+    closeAllBuffers()
+
+    // TODO: Should we close the tree-view?
+    var tv = getTreeView()
+    if (tv) {
+      if (tv.isVisible()) {
+        tv.detach()
+      }
+    }
   })
 }

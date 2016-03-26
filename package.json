@@ -1,24 +1,23 @@
 {
-  "name": "atom-project-switch",
+  "name": "atom-project-util",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mehcode/atom-project-switch.git"
+    "url": "git+https://github.com/mehcode/atom-project-util.git"
   },
   "keywords": [
     "atom",
     "project",
-    "switch",
     "utility"
   ],
   "author": "Ryan Leckey <leckey.ryan@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mehcode/atom-project-switch/issues"
+    "url": "https://github.com/mehcode/atom-project-util/issues"
   },
-  "homepage": "https://github.com/mehcode/atom-project-switch#readme",
+  "homepage": "https://github.com/mehcode/atom-project-util#readme",
   "devDependencies": {
     "eslint": "^2.5.1",
     "eslint-config-standard": "^5.1.0",
