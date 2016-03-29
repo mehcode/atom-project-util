@@ -106,7 +106,7 @@ function atomDeserialize (state) {
 function loadState (key) {
   if (atom.stateStore != null) {
     // Atom 1.7+
-    atom.stateStore.load(key)
+    return atom.stateStore.load(key)
   } else {
     // Atom <= 1.6
     return Promise.resolve(atom.getStorageFolder().load(key))
