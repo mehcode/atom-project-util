@@ -79,8 +79,14 @@ function atomSerialize () {
 
 exports.atomSerialize = atomSerialize
 
-// shim atom.deserialize in <= 1.6
 function atomDeserialize (state) {
+  // Atom >= 1.17
+  // There is a new API for deserializing state into an active window
+  if (atom.restoreStateIntoThisEnvironment) {
+    return atom.restoreStateIntoThisEnvironment(state);
+  }
+
+  // Atom < 1.17
   if (atom.deserialize != null) return atom.deserialize(state)
 
   // Atom <= 1.6
@@ -104,13 +110,17 @@ function atomDeserialize (state) {
 }
 
 function loadState (key) {
+  if (atom.loadState != null) {
+    return atom.loadState(key);
+  }
+
   if (atom.stateStore != null) {
     // Atom 1.7+
     return atom.stateStore.load(key)
-  } else {
-    // Atom <= 1.6
-    return Promise.resolve(atom.getStorageFolder().load(key))
   }
+
+  // Atom <= 1.6
+  return Promise.resolve(atom.getStorageFolder().load(key))
 }
 
 function closeAllBuffers () {
@@ -141,6 +151,25 @@ exports.switch = function (paths) {
     saveCurrentState().then(() => {
       // Load state of the new project
       loadState(newStateKey).then((state) => {
+        // HACK: Unload the active projects. This is _needed_ as of
+        //    Atom 1.17 but apparently it should have been done earlier as
+        //    well. I don't think there was any "bad" effects but eh,
+        //    here we go I guess.
+        atom.project.getPaths().forEach(path => {
+          atom.project.removePath(path)
+        })
+
+        // Destroy the tabs
+        // Fixes memory leak that was present in <= 3.x of this package
+        var tabs = atom.packages.getActivePackage('tabs')
+        if (tabs) {
+          for (var i = 0; i < tabs.mainModule.tabBarViews.length; i++) {
+            tabs.mainModule.tabBarViews[i].destroy();
+          }
+
+          tabs.mainModule.tabBarViews.splice(0);
+        }
+
         if (state) {
           // Deserialize state (this is what does the grunt of the work)
           atomDeserialize(state)
@@ -182,6 +211,10 @@ exports.switch = function (paths) {
         if (pigments) {
           pigments.mainModule.reloadProjectVariables()
         }
+
+        // HACK: Toggle find-and-replace
+        atom.packages.disablePackage('find-and-replace')
+        atom.packages.enablePackage('find-and-replace')
 
         // Done
         resolve()
