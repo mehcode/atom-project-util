@@ -17,9 +17,7 @@ function atomGetStorageFolder () {
 
 exports.getStorageFolder = atomGetStorageFolder
 
-function saveCurrentState () {
-  var paths = atom.project.getPaths()
-
+function saveState (paths) {
   // Compute state key from path set
   var key = atom.getStateKey(paths)
   if (!key) return Promise.resolve(null)
@@ -41,6 +39,11 @@ function saveCurrentState () {
       })
     })
   }
+}
+
+function saveCurrentState () {
+  var paths = atom.project.getPaths()
+  return saveState(paths)
 }
 
 // shim atom.packages.serialize in <= 1.6
@@ -81,6 +84,7 @@ exports.atomSerialize = atomSerialize
 
 // shim atom.deserialize in <= 1.6
 function atomDeserialize (state) {
+  delete state.workspace.paneContainers.left // This is causing error but also fixes open in same window since 1.17.0
   if (atom.deserialize != null) return atom.deserialize(state)
 
   // Atom <= 1.6
@@ -128,6 +132,9 @@ function getTreeView () {
   return tv
 }
 
+// Save project state
+exports.save = saveState
+
 // Switch to another project (in the same window)
 exports.switch = function (paths) {
   var currentStateKey = atom.getStateKey(atom.project.getPaths())
@@ -144,6 +151,7 @@ exports.switch = function (paths) {
         if (state) {
           // Deserialize state (this is what does the grunt of the work)
           atomDeserialize(state)
+
 
           // HACK: Tree view doesn't reload expansion states
           var tvState = state.packageStates['tree-view']
