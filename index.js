@@ -212,10 +212,6 @@ exports.switch = function (paths) {
           pigments.mainModule.reloadProjectVariables()
         }
 
-        // HACK: Toggle find-and-replace
-        atom.packages.disablePackage('find-and-replace')
-        atom.packages.enablePackage('find-and-replace')
-
         // Done
         resolve()
       })
